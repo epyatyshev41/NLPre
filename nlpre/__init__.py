@@ -10,6 +10,7 @@ from .unidecoder import unidecoder
 from .titlecaps import titlecaps
 from .replace_acronyms import replace_acronyms
 from .identify_parenthetical_phrases import identify_parenthetical_phrases
+from .corpus_acronym_counter import corpus_acronym_counter
 
 __all__ = [
     'separated_parenthesis',
@@ -22,6 +23,7 @@ __all__ = [
     'identify_parenthetical_phrases',
     'unidecoder',
     'replace_acronyms',
+    'corpus_acronym_counter',
     '__version__',
 ]
 

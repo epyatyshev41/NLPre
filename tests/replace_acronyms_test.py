@@ -1,6 +1,7 @@
 from nose.tools import assert_equal
-from nlpre import identify_parenthetical_phrases
+from nlpre import identify_parenthetical_phrases, corpus_acronym_counter
 from nlpre.replace_acronyms import replace_acronyms
+
 
 class Parens_Replace_Test():
     def __init__(self):
@@ -157,6 +158,25 @@ class Parens_Replace_Test():
         doc_counter = self.phrases(doc_replace)
 
         big_counter = counter1 + counter2 + counter3
+        replacer = replace_acronyms(big_counter, underscore=False)
+        doc_new = replacer(doc_replace, doc_counter)
+        assert_equal(doc_new, doc_right)
+
+    def count_multiple_docs_corpus_counter_test(self):
+        doc1 = "The Environmental Protection Agency (EPA) was created by Nixon"
+        doc2 = 'The Environmental Protection Agency (EPA) loves the tress. '
+        doc3 = 'The less well known Elephant Protection Agency (EPA) does ' \
+               'important work as well.'
+
+
+
+        doc_replace = 'The EPA helps the environment'
+        doc_right = 'The Environmental Protection Agency helps the environment'
+
+        doc_counter = self.phrases(doc_replace)
+        corpus_counter = corpus_acronym_counter([doc1, doc2, doc3])
+        big_counter = corpus_counter.return_counter()
+
         replacer = replace_acronyms(big_counter, underscore=False)
         doc_new = replacer(doc_replace, doc_counter)
         assert_equal(doc_new, doc_right)
