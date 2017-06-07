@@ -11,6 +11,7 @@ from .titlecaps import titlecaps
 from .replace_acronyms import replace_acronyms
 from .identify_parenthetical_phrases import identify_parenthetical_phrases
 from .corpus_acronym_counter import corpus_acronym_counter
+from .seperate_reference import seperate_reference
 
 __all__ = [
     'separated_parenthesis',
@@ -24,6 +25,7 @@ __all__ = [
     'unidecoder',
     'replace_acronyms',
     'corpus_acronym_counter',
+    'seperate_reference',
     '__version__',
 ]
 
