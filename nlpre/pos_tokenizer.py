@@ -51,23 +51,31 @@ class pos_tokenizer(object):
         """
         self.logger = logging.getLogger(__name__)
         self.nlp = spacy.load('en')
+        self.set_blacklist(POS_blacklist)
+
+
+    def set_blacklist(self, POS_blacklist):
 
         POS = {
             "noun"         : ["NOUN",],
             "proper_noun"  : ["PROPN",],
+            "pronoun"      : ["PRON",],
             "adjective"    : ["ADJ"],
             "verb"         : ["VERB"],
             "adverb"       : ["ADV",],
-            "punctuation"  : ["PUNCT","SYM", "NUM", "PART",],
             "connector"    : ["CCONJ", "CONJ", "DET", "ADP", "INTJ","PRON"],
+            "punctuation"  : ["PUNCT", "NUM", "PART",],
+            "symbol"       : ["SYM",],
             "unknown"      : ["X"],
         }
-
+        
         self.filtered_POS = POS_blacklist
         self.POS_map = {}
         for pos, L in POS.items():
             for y in L:
                 self.POS_map[y] = pos
+
+        return self
 
     def __call__(self, text, force_lemma=True):
         '''
@@ -106,6 +114,9 @@ class pos_tokenizer(object):
                     # For words with multiple caps, don't lemmatize
                     if num_caps > 1:
                         word = token.text
+                    # Don't use spaCy's fancy PRON
+                    elif token.lemma_ == "-PRON-":
+                        word = token.text
                     # For words that start with a cap, only correct this
                     elif token.text[0].isupper():
                         word = token.text[0] + token.lemma_[1:]
@@ -129,9 +140,6 @@ class pos_tokenizer(object):
 
                 sent2.append(word)
                 pos_tags.append(pos)
-                
-                print token, pos, token.tag_
-
             
             doc2.append(' '.join(sent2))
 
