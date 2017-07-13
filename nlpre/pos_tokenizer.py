@@ -1,7 +1,9 @@
-import pattern.en
+#import pattern.en
+import spacy
 from tokenizers import meta_text
 import logging
 
+'''
 _POS_shorthand = {
     "adjective": "ADJ",
     "noun": "N",
@@ -17,7 +19,7 @@ _POS_shorthand = {
     'quote': "QUOTE",
     "symbol": "SYM",
 }
-
+'''
 
 class pos_tokenizer(object):
 
@@ -25,27 +27,18 @@ class pos_tokenizer(object):
     Removes all words that are of a designated part-of-speech (POS) from
     a document. For example, when processing medical text, it is useful to
     remove all words that are not nouns or adjectives. POS detection is
-    provided by the pattern.en.parse module. Parts of speech:
+    provided by the spaCy.io. Parts of speech:
 
-    POS = {
-            "connector": ["CC", "IN", "DT", "TO", "UH", "PDT"],
-            "cardinal": ["CD", "LS"],
-            "adjective": ["JJ", "JJR", "JJS"],
-            "noun": ["NN", "NNS", "NNP", "NNPS"],
-            "pronoun": ["PRP", "PRP$", "PRO"],
-            "adverb": ["RB", "RBR", "RBS", "RP"],
-            "symbol": ["SYM", '$', '#'],
-            "punctuation": [".", ",", ":", ')', '('],
-            "modal_verb": ["MD"],
-            "verb": ["VB", "VBZ", "VBP", "VBD", "VBG", "VBN"],
-            "w_word": ["WDT", "WP", "WP$", "WRB", "EX"],
-            "quote": ['"', "'", "``", "''"],
-            "unknown": ["FW", "``"],
-        }
+    POS = 
+       "punctuation" : punctuation and symbols [PUNCT, SYM]
+       "noun" : nouns and proper nouns
+       "adjective": 
+    "unknown": ["X"],
+    "noun":
 
-    connectors -> conjunction, determiner, infinitival to,
-                  interjection, predeterminer
-    w_word     -> which, what, who, whose, when, where, there, that, ...
+    "pronoun":
+
+    }
 
     """
 
@@ -57,22 +50,17 @@ class pos_tokenizer(object):
             POS_blacklist: A list of parts of speech to remove from the text.
         """
         self.logger = logging.getLogger(__name__)
-        self.parse = lambda x: pattern.en.parse(x, chunks=False, tags=True)
+        self.nlp = spacy.load('en')
 
         POS = {
-            "connector": ["CC", "IN", "DT", "TO", "UH", "PDT"],
-            "cardinal": ["CD", "LS"],
-            "adjective": ["JJ", "JJR", "JJS"],
-            "noun": ["NN", "NNS", "NNP", "NNPS"],
-            "pronoun": ["PRP", "PRP$", "POS"],
-            "adverb": ["RB", "RBR", "RBS", "RP"],
-            "symbol": ["SYM", '$', '#'],
-            "punctuation": [".", ",", ":", ')', '('],
-            "modal_verb": ["MD"],
-            "verb": ["VB", "VBZ", "VBP", "VBD", "VBG", "VBN"],
-            "w_word": ["WDT", "WP", "WP$", "WRB", "EX"],
-            "quote": ['"', "'", "``", "''"],
-            "unknown": ["FW", ],
+            "noun"         : ["NOUN",],
+            "proper_noun"  : ["PROPN",],
+            "adjective"    : ["ADJ"],
+            "verb"         : ["VERB"],
+            "adverb"       : ["ADV",],
+            "punctuation"  : ["PUNCT","SYM", "NUM", "PART",],
+            "connector"    : ["CCONJ", "CONJ", "DET", "ADP", "INTJ","PRON"],
+            "unknown"      : ["X"],
         }
 
         self.filtered_POS = POS_blacklist
@@ -91,6 +79,77 @@ class pos_tokenizer(object):
         Returns:
             results: A string document
         '''
+
+        # Due to spaCy.ios handling of hyphens, we need to mask them beforehand
+        text = text.replace('-', '_HYPHENNN')
+        print text
+        
+        proc_text = self.nlp(text)
+
+        pos_tags = []
+        doc2 = []
+        removedWords = []
+        
+        for sent in self.nlp(text).sents:
+
+            sent2 = []
+            for token in sent:
+
+                
+                # Skip extra spaces
+                if token.is_space:
+                    continue
+                
+                if force_lemma:
+                    num_caps = sum((x.isupper() for x in token.text))
+
+                    # For words with multiple caps, don't lemmatize
+                    if num_caps > 1:
+                        word = token.text
+                    # For words that start with a cap, only correct this
+                    elif token.text[0].isupper():
+                        word = token.text[0] + token.lemma_[1:]
+                    # Otherwise lemmatize
+                    else:
+                        word = token.lemma_
+                        
+                else:
+                    word = token.text
+
+                
+                # Words with underscores are marked as nouns
+                if "_" in word:
+                    pos = "noun"
+                else:
+                    pos = self.POS_map[token.pos_]
+
+                if pos in self.filtered_POS:
+                    removedWords.append(word)
+                    continue
+
+                sent2.append(word)
+                pos_tags.append(pos)
+                
+                print token, pos, token.tag_
+
+            
+            doc2.append(' '.join(sent2))
+
+        doc2 = '\n'.join(doc2)
+
+        # Undo the spaCy.io hack
+        doc2 = doc2.replace('_HYPHENNN', '-')
+        
+        self.logger.info('Removed words: %s' % removedWords)
+
+        # The number of POS tokens should match the number of word tokens
+        assert(len(pos_tags) == len(doc2.split()))
+
+        result = meta_text(doc2, POS=pos_tags)
+        return result
+
+        '''
+        exit()
 
         pos_tags = []
         tokens = self.parse(text)
@@ -147,3 +206,4 @@ class pos_tokenizer(object):
 
         result = meta_text(doc2, POS=pos_tags)
         return result
+        '''
