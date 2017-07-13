@@ -3,23 +3,6 @@ import spacy
 from tokenizers import meta_text
 import logging
 
-'''
-_POS_shorthand = {
-    "adjective": "ADJ",
-    "noun": "N",
-    "verb": "V",
-    "modal_verb": "V",
-    "adverb": "RB",
-    "unknown": "UNK",
-    "pronoun": "POS",
-    "connector": "CC",
-    "punctuation": "PUNC",
-    "cardinal": "CD",
-    "w_word": "WV",
-    'quote': "QUOTE",
-    "symbol": "SYM",
-}
-'''
 
 class pos_tokenizer(object):
 
@@ -27,18 +10,7 @@ class pos_tokenizer(object):
     Removes all words that are of a designated part-of-speech (POS) from
     a document. For example, when processing medical text, it is useful to
     remove all words that are not nouns or adjectives. POS detection is
-    provided by the spaCy.io. Parts of speech:
-
-    POS = 
-       "punctuation" : punctuation and symbols [PUNCT, SYM]
-       "noun" : nouns and proper nouns
-       "adjective": 
-    "unknown": ["X"],
-    "noun":
-
-    "pronoun":
-
-    }
+    provided by the spaCy.io.
 
     """
 
@@ -90,8 +62,6 @@ class pos_tokenizer(object):
 
         # Due to spaCy.ios handling of hyphens, we need to mask them beforehand
         text = text.replace('-', '_HYPHENNN')
-        print text
-        
         proc_text = self.nlp(text)
 
         pos_tags = []
@@ -106,6 +76,12 @@ class pos_tokenizer(object):
                 
                 # Skip extra spaces
                 if token.is_space:
+                    continue
+
+                # There are so many different pronouns in spaCy, if we find one
+                # and we don't want it, remove it here
+                if token.lemma_ == "-PRON-" and "pronoun" in self.filtered_POS:
+                    removedWords.append(token.text)
                     continue
                 
                 if force_lemma:

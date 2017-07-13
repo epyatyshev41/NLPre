@@ -38,7 +38,7 @@ for key in keys:
     else:
         parser = getattr(nlpre, key)()
 
-    if key=='unidecoder':
+    if key in ['unidecoder','pos_tokenizer']:
         func = lambda : [parser(unicode(x)) for x in [doc2]]
     else:
         func = lambda : [parser(x) for x in [doc2]]
