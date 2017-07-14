@@ -2,6 +2,7 @@
 unidecode
 pyparsing
 pattern
+spacy
 
 # For Python 2/3 compatibility
 six
