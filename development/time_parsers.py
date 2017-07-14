@@ -18,10 +18,17 @@ keys = [
 ]
 
 
-POS_Blacklist = ["connector","cardinal",
-                 "pronoun","adverb",
-                 "symbol","verb",
-                 "punctuation","modal_verb","w_word"]
+noun_blacklist = set((
+    "connector",
+    "pronoun",
+    "number",
+    "adverb",
+    "symbol",
+    "verb",
+    "punctuation",
+    "common_verb",
+))
+
 
 ABR = nlpre.identify_parenthetical_phrases()(doc2)
 key0 = (('systemic', 'lupus', 'erythematosus'), 'SLE')
@@ -32,7 +39,7 @@ n = 10
 data=[]
 for key in keys:
     if key =='pos_tokenizer':
-        parser = nlpre.pos_tokenizer(POS_Blacklist)
+        parser = nlpre.pos_tokenizer(noun_blacklist)
     elif key == "replace_acronyms":
         parser = nlpre.replace_acronyms(ABR)
     else:
@@ -50,7 +57,14 @@ df = pd.DataFrame(data)
 df = df.set_index('function').sort_values('time')
 df["frac"] = df.time / df.time.sum()
 
-print df
+print '''
+| function | total time | fraction time |
+| -------- | ---------- | ------------- |
+'''.strip()
+
+for f,row in df.iterrows():
+    print "|{}|{:0.4f}|{:0.4f}|".format(f, row.time, row.frac)
+
 
 
 

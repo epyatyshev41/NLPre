@@ -32,7 +32,7 @@ class pos_tokenizer(object):
 
         self.POS_map = {
             "-LRB-": "punctuation",
-            "-PRB-": "punctuation",
+            "-RRB-": "punctuation",
             ",": "punctuation",
             ":": "punctuation",
             ".": "punctuation",

@@ -13,15 +13,16 @@ class Full_Test:
         self.location = os.path.realpath(
             os.path.join(os.getcwd(), os.path.dirname('doc1')))
 
-        POS_Blacklist = set(("connector",
-                             "cardinal",
-                             "pronoun",
-                             "adverb",
-                             "symbol",
-                             "verb",
-                             "punctuation",
-                             "modal_verb",
-                             "w_word",))
+        noun_blacklist = set((
+            "connector",
+            "pronoun",
+            "number",
+            "adverb",
+            "symbol",
+            "verb",
+            "punctuation",
+            "common_verb",
+        ))
 
         MeSH_dict = "dictionaries/"
         local_dir = os.path.dirname(os.path.abspath('nlpre/dictionaries'))
@@ -43,7 +44,7 @@ class Full_Test:
         self.token_replacement = token_replacement()
         self.decaps = decaps_text()
         self.separate_reference = separate_reference()
-        self.pos_tokenizer = pos_tokenizer(POS_Blacklist)
+        self.pos_tokenizer = pos_tokenizer(noun_blacklist)
 
         with codecs.open(self.location + '/tests/doc1', 'r', 'utf-8') as f1:
             self.doc1 = f1.read()
